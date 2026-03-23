@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --muted: #dbeafe;
+  --card: #ffffff;
+  --border: #cbd5e1;
+  --success: #16a34a;
+  --danger: #dc2626;
+}
+
+html[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --muted: #1e293b;
+  --card: #111827;
+  --border: #334155;
+}
+
+html[data-accent="green"] {
+  --primary: #22c55e;
+  --primary-light: #4ade80;
+}
+
+html[data-accent="yellow"] {
+  --primary: #ca8a04;
+  --primary-light: #eab308;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--card);
+}
+
+html[data-theme="dark"] .bg-slate-50 {
+  background-color: #0f172a;
+}
+
+html[data-theme="dark"] .text-slate-500 {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] .text-slate-700 {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .hover\:bg-slate-50:hover,
+html[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: #1e293b;
+}
