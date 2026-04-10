@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Chart from "@/components/Chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,11 +48,72 @@ const initialValues: Record<RowKey, number[]> = {
   juros_bancarios: [0, 0],
 };
 
+const FLUXO_STORAGE_KEY = "guto_dashboard_fluxo_caixa_draft";
+
 export default function FluxoCaixaPage() {
   const [periodos, setPeriodos] = useState(["1º Período", "2º Período"]);
   const [values, setValues] = useState<Record<RowKey, number[]>>(initialValues);
   const [entradasMinimizadas, setEntradasMinimizadas] = useState(false);
   const [saidasMinimizadas, setSaidasMinimizadas] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(FLUXO_STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw) as {
+        periodos?: string[];
+        values?: Partial<Record<RowKey, number[]>>;
+        entradasMinimizadas?: boolean;
+        saidasMinimizadas?: boolean;
+      };
+
+      const savedPeriodos =
+        Array.isArray(parsed.periodos) && parsed.periodos.length > 0
+          ? parsed.periodos.map((item, index) => String(item || `${index + 1}º Período`))
+          : ["1º Período", "2º Período"];
+      const periodCount = savedPeriodos.length;
+      setPeriodos(savedPeriodos);
+
+      const sourceValues = parsed.values ?? {};
+      const normalizeList = (list: number[] | undefined) => {
+        if (!Array.isArray(list)) {
+          return Array.from({ length: periodCount }, () => 0);
+        }
+        const normalized = list.map((item) => Number(item ?? 0));
+        if (normalized.length >= periodCount) {
+          return normalized.slice(0, periodCount);
+        }
+        return [...normalized, ...Array.from({ length: periodCount - normalized.length }, () => 0)];
+      };
+      setValues({
+        recebimento_vendas: normalizeList(sourceValues.recebimento_vendas),
+        emprestimos_entrada: normalizeList(sourceValues.emprestimos_entrada),
+        outras_entradas: normalizeList(sourceValues.outras_entradas),
+        impostos_federais: normalizeList(sourceValues.impostos_federais),
+        comissoes_vendas: normalizeList(sourceValues.comissoes_vendas),
+        fornecedores: normalizeList(sourceValues.fornecedores),
+        despesas_fixas: normalizeList(sourceValues.despesas_fixas),
+        emprestimos_saida: normalizeList(sourceValues.emprestimos_saida),
+        juros_bancarios: normalizeList(sourceValues.juros_bancarios),
+      });
+
+      if (typeof parsed.entradasMinimizadas === "boolean") {
+        setEntradasMinimizadas(parsed.entradasMinimizadas);
+      }
+      if (typeof parsed.saidasMinimizadas === "boolean") {
+        setSaidasMinimizadas(parsed.saidasMinimizadas);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      FLUXO_STORAGE_KEY,
+      JSON.stringify({ periodos, values, entradasMinimizadas, saidasMinimizadas })
+    );
+  }, [periodos, values, entradasMinimizadas, saidasMinimizadas]);
 
   function addPeriodo() {
     setPeriodos((prev) => [...prev, `${prev.length + 1}º Período`]);

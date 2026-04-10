@@ -17,6 +17,9 @@ type DreState = {
   despesasFinanceiras: number;
 };
 
+const DRE_DRAFT_STORAGE_KEY = "guto_dashboard_dre_draft";
+const DRE_MODE_STORAGE_KEY = "guto_dashboard_dre_mode";
+
 const initialState: Record<Modo, DreState> = {
   anual: {
     receita: 0,
@@ -44,6 +47,22 @@ const initialState: Record<Modo, DreState> = {
   },
 };
 
+function isModo(value: unknown): value is Modo {
+  return value === "anual" || value === "projetado" || value === "realizado";
+}
+
+function normalizeDreState(value: unknown): DreState {
+  const source = value as Partial<DreState> | null | undefined;
+  return {
+    receita: Number(source?.receita ?? 0),
+    imposto: Number(source?.imposto ?? 0),
+    comissao: Number(source?.comissao ?? 0),
+    custos: Number(source?.custos ?? 0),
+    despesas: Number(source?.despesas ?? 0),
+    despesasFinanceiras: Number(source?.despesasFinanceiras ?? 0),
+  };
+}
+
 export default function DrePage() {
   const [modo, setModo] = useState<Modo>("projetado");
   const [values, setValues] = useState<Record<Modo, DreState>>(initialState);
@@ -55,6 +74,26 @@ export default function DrePage() {
   const custoOperacionalTotal = form.custos + custoMateriaPrima;
 
   useEffect(() => {
+    let hasLocalDraft = false;
+    try {
+      const savedValues = window.localStorage.getItem(DRE_DRAFT_STORAGE_KEY);
+      if (savedValues) {
+        hasLocalDraft = true;
+        const parsed = JSON.parse(savedValues) as Partial<Record<Modo, DreState>>;
+        setValues({
+          anual: normalizeDreState(parsed?.anual),
+          projetado: normalizeDreState(parsed?.projetado),
+          realizado: normalizeDreState(parsed?.realizado),
+        });
+      }
+
+      const savedMode = window.localStorage.getItem(DRE_MODE_STORAGE_KEY);
+      if (isModo(savedMode)) {
+        hasLocalDraft = true;
+        setModo(savedMode);
+      }
+    } catch {}
+
     async function carregarDre() {
       try {
         const { data, error: loadError } = await getAllDRE();
@@ -84,7 +123,9 @@ export default function DrePage() {
           }
         });
 
-        setValues(nextValues);
+        if (!hasLocalDraft) {
+          setValues(nextValues);
+        }
         setDreIds(nextIds);
       } catch {
         setError("Não foi possível carregar os dados da DRE.");
@@ -104,6 +145,14 @@ export default function DrePage() {
       window.removeEventListener("focus", atualizarCustoMateriaPrima);
     };
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(DRE_DRAFT_STORAGE_KEY, JSON.stringify(values));
+  }, [values]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DRE_MODE_STORAGE_KEY, modo);
+  }, [modo]);
 
   const impostosValor = useMemo(() => form.receita * (form.imposto / 100), [form]);
   const comissaoValor = useMemo(() => form.receita * (form.comissao / 100), [form]);

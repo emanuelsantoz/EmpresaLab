@@ -14,6 +14,7 @@ const labels: Record<string, string> = {
   "/kpis": "KPIs",
   "/vendas": "Vendas",
   "/empresa": "Empresa",
+  "/cadastro-empresas": "Cadastro de Empresas",
 };
 
 export default function Header() {

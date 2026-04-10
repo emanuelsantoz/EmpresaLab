@@ -31,6 +31,7 @@ const links = [
   { href: "/kpis", label: "KPIs", icon: TrendingUp },
   { href: "/vendas", label: "Vendas", icon: ShoppingCart },
   { href: "/empresa", label: "Empresa", icon: Building2 },
+  { href: "/cadastro-empresas", label: "Cadastro de Empresas", icon: Building2 },
 ] satisfies { href: string; label: string; icon: LucideIcon }[];
 
 const iconSize = 18;
@@ -156,7 +157,7 @@ export default function Sidebar() {
                     : "text-slate-600 hover:bg-slate-100 hover:text-foreground"
                 )}
               >
-                <Icon size={iconSize} />
+                <Icon size={iconSize} suppressHydrationWarning />
                 {!collapsed ? <span>{link.label}</span> : null}
               </Link>
               {!collapsed && isEditingOrder ? (
@@ -167,7 +168,7 @@ export default function Sidebar() {
                     className="rounded-md border border-border p-1 text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-30"
                     aria-label={`Subir ${link.label}`}
                   >
-                    <ArrowUp size={14} />
+                    <ArrowUp size={14} suppressHydrationWarning />
                   </button>
                   <button
                     onClick={() => moveLink(link.href, "down")}
@@ -175,7 +176,7 @@ export default function Sidebar() {
                     className="rounded-md border border-border p-1 text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-30"
                     aria-label={`Descer ${link.label}`}
                   >
-                    <ArrowDown size={14} />
+                    <ArrowDown size={14} suppressHydrationWarning />
                   </button>
                 </div>
               ) : null}
